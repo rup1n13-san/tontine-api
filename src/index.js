@@ -4,6 +4,7 @@ import express from 'express';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import { sequelize } from './config/database.js';
+import authRoutes from './routes/auth.routes.js';
 import indexRoutes from './routes/index.js';
 
 // Load environment variables
@@ -45,7 +46,7 @@ app.get('/health', (_req, res) => {
 
 // API Routes
 app.use('/', indexRoutes);
-// app.use('/api/auth', authRoutes);     // To be implemented
+app.use('/api/auth', authRoutes);
 // app.use('/api/tontines', tontineRoutes); // To be implemented
 
 // 404 handler
