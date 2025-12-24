@@ -4,7 +4,7 @@ export default {
   testMatch: ['**/test/**/*.test.js'],
   collectCoverageFrom: [
     'src/**/*.js',
-    '!src/server.js'
+    '!src/index.js'
   ],
   coverageThreshold: {
     global: {

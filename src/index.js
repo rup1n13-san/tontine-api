@@ -81,6 +81,16 @@ const startServer = async () => {
       console.log('Database models synchronized');
     }
 
+    // Setup automatic cleanup of expired blacklisted tokens (every hour)
+    const BlacklistedToken = (await import('./models/BlacklistedToken.js')).default;
+    setInterval(async () => {
+      try {
+        await BlacklistedToken.cleanupExpired();
+      } catch (error) {
+        console.error('Blacklist cleanup error:', error);
+      }
+    }, 60 * 60 * 1000); // 1 hour
+
     // Start server
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`Server is running on port ${PORT}`);

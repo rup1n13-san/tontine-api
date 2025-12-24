@@ -1,3 +1,5 @@
+import jwt from 'jsonwebtoken';
+import BlacklistedToken from '../models/BlacklistedToken.js';
 import User from '../models/User.js';
 import { generateToken } from '../utils/jwt.js';
 
@@ -88,6 +90,31 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        success: false,
+        message: 'No token provided'
+      });
+    }
+
+    const token = authHeader.split(' ')[1];
+
+    const decoded = jwt.decode(token);
+    if (!decoded || !decoded.exp) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid token format'
+      });
+    }
+
+    const expiresAt = new Date(decoded.exp * 1000);
+
+    await BlacklistedToken.create({
+      token,
+      expiresAt
+    });
+
     return res.status(200).json({
       success: true,
       message: 'Déconnexion réussie'

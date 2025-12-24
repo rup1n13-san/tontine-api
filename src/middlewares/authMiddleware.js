@@ -1,3 +1,4 @@
+import BlacklistedToken from '../models/BlacklistedToken.js';
 import User from '../models/User.js';
 import { verifyToken } from '../utils/jwt.js';
 
@@ -12,6 +13,14 @@ export const authMiddleware = async (req, res, next) => {
     }
 
     const token = authHeader.split(' ')[1];
+
+    const blacklisted = await BlacklistedToken.findOne({ where: { token } });
+    if (blacklisted) {
+      return res.status(401).json({
+        success: false,
+        message: 'Token invalide'
+      });
+    }
 
     const decoded = verifyToken(token);
     if (!decoded) {
@@ -30,6 +39,7 @@ export const authMiddleware = async (req, res, next) => {
     }
 
     req.user = user;
+    req.token = token;
     next();
   } catch (error) {
     console.error('Authentication middleware error:', error);
