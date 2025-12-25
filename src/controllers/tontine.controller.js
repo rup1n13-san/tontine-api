@@ -1,6 +1,7 @@
 import { Op } from 'sequelize';
 import { sequelize } from '../config/database.js';
 import { Participant, Payment, Tontine, User } from '../models/index.js';
+import { sendError, sendSuccess } from '../utils/response.js';
 
 export const createTontine = async (req, res) => {
   const transaction = await sequelize.transaction();
@@ -36,19 +37,12 @@ export const createTontine = async (req, res) => {
       }]
     });
 
-    return res.status(201).json({
-      success: true,
-      data: tontineWithCreator
-    });
+    return sendSuccess(res, tontineWithCreator, null, 201);
 
   } catch (error) {
     await transaction.rollback();
     console.error('Error creating tontine:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Erreur lors de la création de la tontine',
-      error: error.message
-    });
+    return sendError(res, 'Erreur lors de la création de la tontine', 500);
   }
 };
 
@@ -78,18 +72,11 @@ export const listTontines = async (req, res) => {
       }
     });
 
-    return res.json({
-      success: true,
-      data: tontines
-    });
+    return sendSuccess(res, tontines);
 
   } catch (error) {
     console.error('Error listing tontines:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Erreur lors de la récupération des tontines',
-      error: error.message
-    });
+    return sendError(res, 'Erreur lors de la récupération des tontines', 500);
   }
 };
 
@@ -116,10 +103,7 @@ export const getTontineDetails = async (req, res) => {
     });
 
     if (!tontine) {
-      return res.status(404).json({
-        success: false,
-        message: 'Tontine not found'
-      });
+      return sendError(res, 'Tontine not found', 404);
     }
 
     const participantCount = tontine.Participants.length;
@@ -129,18 +113,11 @@ export const getTontineDetails = async (req, res) => {
       totalRounds: participantCount
     };
 
-    return res.json({
-      success: true,
-      data: response
-    });
+    return sendSuccess(res, response);
 
   } catch (error) {
     console.error('Error getting tontine details:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Erreur lors de la récupération des détails',
-      error: error.message
-    });
+    return sendError(res, 'Erreur lors de la récupération des détails', 500);
   }
 };
 
@@ -151,17 +128,11 @@ export const joinTontine = async (req, res) => {
 
     const tontine = await Tontine.findByPk(tontineId);
     if (!tontine) {
-      return res.status(404).json({
-        success: false,
-        message: 'Tontine not found'
-      });
+      return sendError(res, 'Tontine not found', 404);
     }
 
     if (tontine.status === 'completed') {
-      return res.status(400).json({
-        success: false,
-        message: 'Cannot join completed tontine'
-      });
+      return sendError(res, 'Cannot join completed tontine', 400);
     }
 
     const existingParticipant = await Participant.findOne({
@@ -169,10 +140,7 @@ export const joinTontine = async (req, res) => {
     });
 
     if (existingParticipant) {
-      return res.status(400).json({
-        success: false,
-        message: 'Already a participant'
-      });
+      return sendError(res, 'Already a participant', 400);
     }
 
     const maxPosition = await Participant.max('position', {
@@ -192,18 +160,11 @@ export const joinTontine = async (req, res) => {
       totalRounds: nextPosition
     });
 
-    return res.status(201).json({
-      success: true,
-      data: participant
-    });
+    return sendSuccess(res, participant, null, 201);
 
   } catch (error) {
     console.error('Error joining tontine:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Erreur lors de la participation',
-      error: error.message
-    });
+    return sendError(res, 'Erreur lors de la participation', 500);
   }
 };
 
@@ -222,10 +183,7 @@ export const makePayment = async (req, res) => {
 
     if (!tontine) {
       await transaction.rollback();
-      return res.status(404).json({
-        success: false,
-        message: 'Tontine not found'
-      });
+      return sendError(res, 'Tontine not found', 404);
     }
 
     const participant = await Participant.findOne({
@@ -235,18 +193,12 @@ export const makePayment = async (req, res) => {
 
     if (!participant) {
       await transaction.rollback();
-      return res.status(403).json({
-        success: false,
-        message: 'You are not a participant of this tontine'
-      });
+      return sendError(res, 'You are not a participant of this tontine', 403);
     }
 
     if (parseFloat(amount) !== parseFloat(tontine.amount)) {
       await transaction.rollback();
-      return res.status(400).json({
-        success: false,
-        message: `Payment amount must be ${tontine.amount}`
-      });
+      return sendError(res, `Payment amount must be ${tontine.amount}`, 400);
     }
 
     const currentRound = tontine.currentRound;
@@ -262,10 +214,7 @@ export const makePayment = async (req, res) => {
 
     if (existingPayment) {
       await transaction.rollback();
-      return res.status(400).json({
-        success: false,
-        message: `You have already paid for round ${currentRound}`
-      });
+      return sendError(res, `You have already paid for round ${currentRound}`, 400);
     }
 
     const payment = await Payment.create({
@@ -316,20 +265,12 @@ export const makePayment = async (req, res) => {
 
     await transaction.commit();
 
-    return res.status(201).json({
-      success: true,
-      data: payment,
-      message: `Payment for round ${currentRound} recorded successfully`
-    });
+    return sendSuccess(res, payment, `Payment for round ${currentRound} recorded successfully`, 201);
 
   } catch (error) {
     await transaction.rollback();
     console.error('Error making payment:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Erreur lors du paiement',
-      error: error.message
-    });
+    return sendError(res, 'Erreur lors du paiement', 500);
   }
 };
 
@@ -339,10 +280,7 @@ export const getRoundStatus = async (req, res) => {
 
     const tontine = await Tontine.findByPk(tontineId);
     if (!tontine) {
-      return res.status(404).json({
-        success: false,
-        message: 'Tontine not found'
-      });
+      return sendError(res, 'Tontine not found', 404);
     }
 
     const currentRound = tontine.currentRound;
@@ -377,26 +315,19 @@ export const getRoundStatus = async (req, res) => {
 
     const beneficiary = participants.find(p => p.position === currentRound);
 
-    return res.json({
-      success: true,
-      data: {
-        currentRound,
-        totalRounds: tontine.totalRounds || participants.length,
-        status: tontine.status,
-        beneficiary: beneficiary ? beneficiary.User : null,
-        participants: participantsStatus,
-        paymentsReceived: payments.length,
-        totalParticipants: participants.length,
-        isRoundComplete: payments.length === participants.length
-      }
+    return sendSuccess(res, {
+      currentRound,
+      totalRounds: tontine.totalRounds || participants.length,
+      status: tontine.status,
+      beneficiary: beneficiary ? beneficiary.User : null,
+      participants: participantsStatus,
+      paymentsReceived: payments.length,
+      totalParticipants: participants.length,
+      isRoundComplete: payments.length === participants.length
     });
 
   } catch (error) {
     console.error('Error getting round status:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Erreur lors de la récupération du statut',
-      error: error.message
-    });
+    return sendError(res, 'Erreur lors de la récupération du statut', 500);
   }
 };

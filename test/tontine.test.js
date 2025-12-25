@@ -32,8 +32,8 @@ beforeEach(async () => {
       lastName: 'User1'
     });
 
-  authToken = user1Response.body.token;
-  userId = user1Response.body.user.id;
+  authToken = user1Response.body.data.token;
+  userId = user1Response.body.data.user.id;
 
   const user2Response = await request(app)
     .post('/api/auth/register')
@@ -44,8 +44,8 @@ beforeEach(async () => {
       lastName: 'User2'
     });
 
-  secondUserToken = user2Response.body.token;
-  secondUserId = user2Response.body.user.id;
+  secondUserToken = user2Response.body.data.token;
+  secondUserId = user2Response.body.data.user.id;
 });
 
 describe('Tontine CRUD Operations', () => {

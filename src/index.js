@@ -7,6 +7,7 @@ import { sequelize } from './config/database.js';
 import authRoutes from './routes/auth.routes.js';
 import indexRoutes from './routes/index.js';
 import tontineRoutes from './routes/tontine.routes.js';
+import { sendError } from './utils/response.js';
 
 // Load environment variables
 dotenv.config();
@@ -52,21 +53,18 @@ app.use('/api/tontines', tontineRoutes);
 
 // 404 handler
 app.use((_req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Route not found'
-  });
+  sendError(res, 'Route not found', 404);
 });
 
 // Global error handler
 app.use((err, _req, res, _next) => {
   console.error('Error:', err);
   
-  res.status(err.status || 500).json({
-    success: false,
-    message: err.message || 'Internal server error',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-  });
+  const message = process.env.NODE_ENV === 'production' 
+    ? 'Internal server error' 
+    : err.message || 'Internal server error';
+  
+  sendError(res, message, err.status || 500);
 });
 
 // Database connection and server start

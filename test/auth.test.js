@@ -31,11 +31,11 @@ describe('Authentication Tests', () => {
 
       expect(response.status).toBe(201);
       expect(response.body.success).toBe(true);
-      expect(response.body.token).toBeDefined();
-      expect(response.body.user.email).toBe('test@example.com');
-      expect(response.body.user.firstName).toBe('John');
-      expect(response.body.user.lastName).toBe('Doe');
-      expect(response.body.user.password).toBeUndefined();
+      expect(response.body.data.token).toBeDefined();
+      expect(response.body.data.user.email).toBe('test@example.com');
+      expect(response.body.data.user.firstName).toBe('John');
+      expect(response.body.data.user.lastName).toBe('Doe');
+      expect(response.body.data.user.password).toBeUndefined();
     });
 
     it('should fail with existing email', async () => {
@@ -95,8 +95,8 @@ describe('Authentication Tests', () => {
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
-      expect(response.body.token).toBeDefined();
-      expect(response.body.user.email).toBe('test@example.com');
+      expect(response.body.data.token).toBeDefined();
+      expect(response.body.data.user.email).toBe('test@example.com');
     });
 
     it('should fail with wrong password', async () => {
@@ -136,7 +136,7 @@ describe('Authentication Tests', () => {
           firstName: 'John',
           lastName: 'Doe'
         });
-      token = response.body.token;
+      token = response.body.data.token;
     });
 
     it('should logout successfully with valid token', async () => {
