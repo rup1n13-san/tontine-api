@@ -6,6 +6,7 @@ import helmet from 'helmet';
 import { sequelize } from './config/database.js';
 import authRoutes from './routes/auth.routes.js';
 import indexRoutes from './routes/index.js';
+import tontineRoutes from './routes/tontine.routes.js';
 
 // Load environment variables
 dotenv.config();
@@ -47,7 +48,7 @@ app.get('/health', (_req, res) => {
 // API Routes
 app.use('/', indexRoutes);
 app.use('/api/auth', authRoutes);
-// app.use('/api/tontines', tontineRoutes); // To be implemented
+app.use('/api/tontines', tontineRoutes);
 
 // 404 handler
 app.use((_req, res) => {
