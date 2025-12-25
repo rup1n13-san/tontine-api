@@ -1,0 +1,365 @@
+{
+  "info": {
+    "name": "Tontine API",
+    "_postman_id": "tontine-api-collection",
+    "description": "Complete API collection for Tontine management system with automatic round tracking",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{authToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('authToken', response.data.token);",
+                  "    pm.environment.set('userId', response.data.user.id);",
+                  "    pm.test('Registration successful', () => {",
+                  "        pm.expect(response.success).to.be.true;",
+                  "        pm.expect(response.data.token).to.exist;",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Register a new user account"
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('authToken', response.data.token);",
+                  "    pm.environment.set('userId', response.data.user.id);",
+                  "    pm.test('Login successful', () => {",
+                  "        pm.expect(response.success).to.be.true;",
+                  "        pm.expect(response.data.token).to.exist;",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login with existing credentials"
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Logout successful', () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.success).to.be.true;",
+                  "    pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "pm.environment.unset('authToken');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout"]
+            },
+            "description": "Logout and blacklist current token"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Tontines",
+      "item": [
+        {
+          "name": "Create Tontine",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('tontineId', response.data.id);",
+                  "    pm.test('Tontine created successfully', () => {",
+                  "        pm.expect(response.success).to.be.true;",
+                  "        pm.expect(response.data.id).to.exist;",
+                  "        pm.expect(response.data.currentRound).to.equal(1);",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Monthly Savings Group\",\n  \"amount\": 50000,\n  \"frequency\": 30,\n  \"startDate\": \"2025-02-01\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tontines",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tontines"]
+            },
+            "description": "Create a new tontine (creator auto-added as participant)"
+          },
+          "response": []
+        },
+        {
+          "name": "List Tontines",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('List tontines successful', () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.success).to.be.true;",
+                  "    pm.expect(response.data).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tontines",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tontines"]
+            },
+            "description": "Get all tontines where user is creator or participant"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Tontine Details",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Get tontine details successful', () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.success).to.be.true;",
+                  "    pm.expect(response.data.Participants).to.be.an('array');",
+                  "    pm.expect(response.data.participantCount).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tontines/{{tontineId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tontines", "{{tontineId}}"]
+            },
+            "description": "Get detailed information about a specific tontine"
+          },
+          "response": []
+        },
+        {
+          "name": "Join Tontine",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Join tontine successful', () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.success).to.be.true;",
+                  "    pm.expect(response.data.position).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tontines/{{tontineId}}/join",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tontines", "{{tontineId}}", "join"]
+            },
+            "description": "Join an existing tontine"
+          },
+          "response": []
+        },
+        {
+          "name": "Make Payment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Payment successful', () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.success).to.be.true;",
+                  "    pm.expect(response.data.roundNumber).to.exist;",
+                  "    pm.expect(response.message).to.include('Payment for round');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 50000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tontines/{{tontineId}}/pay",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tontines", "{{tontineId}}", "pay"]
+            },
+            "description": "Make a payment for the current round"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Round Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Get round status successful', () => {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.success).to.be.true;",
+                  "    pm.expect(response.data.currentRound).to.exist;",
+                  "    pm.expect(response.data.participants).to.be.an('array');",
+                  "    pm.expect(response.data.isRoundComplete).to.be.a('boolean');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tontines/{{tontineId}}/round",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tontines", "{{tontineId}}", "round"]
+            },
+            "description": "Get current round status with participant payment info"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        },
+        "description": "Check if API is running"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ]
+}

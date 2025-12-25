@@ -1,0 +1,635 @@
+openapi: 3.0.3
+info:
+  title: Tontine API
+  description: |
+    REST API for managing tontines (rotating savings and credit associations) with JWT authentication.
+    
+    A tontine is a collaborative savings system where members contribute a fixed amount periodically,
+    and each cycle, one member receives the total pot. Rotation continues until all members have received once.
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@tontine-api.com
+
+servers:
+  - url: http://localhost:3000
+    description: Development server
+  - url: https://api.tontine.com
+    description: Production server
+
+tags:
+  - name: Authentication
+    description: User authentication endpoints
+  - name: Tontines
+    description: Tontine management endpoints
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from login or register
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        lastName:
+          type: string
+      required:
+        - id
+        - email
+        - firstName
+        - lastName
+
+    Tontine:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        amount:
+          type: number
+          format: decimal
+        frequency:
+          type: integer
+          description: Payment frequency in days
+        startDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [pending, active, completed]
+        currentRound:
+          type: integer
+        totalRounds:
+          type: integer
+        createdBy:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+
+    Participant:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tontineId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        position:
+          type: integer
+        hasReceived:
+          type: boolean
+        joinedAt:
+          type: string
+          format: date-time
+
+    Payment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tontineId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        amount:
+          type: number
+          format: decimal
+        roundNumber:
+          type: integer
+        status:
+          type: string
+          enum: [pending, completed, failed]
+        paymentDate:
+          type: string
+          format: date-time
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+        message:
+          type: string
+      required:
+        - success
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+        errors:
+          type: array
+          items:
+            type: string
+      required:
+        - success
+        - message
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      tags:
+        - System
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+
+  /api/auth/register:
+    post:
+      summary: Register a new user
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  minLength: 6
+                  example: password123
+                firstName:
+                  type: string
+                  minLength: 2
+                  example: John
+                lastName:
+                  type: string
+                  minLength: 2
+                  example: Doe
+              required:
+                - email
+                - password
+                - firstName
+                - lastName
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                      user:
+                        $ref: '#/components/schemas/User'
+                  message:
+                    type: string
+                    example: Compte créé avec succès
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: Validation error
+                errors:
+                  - '"email" must be a valid email'
+                  - '"password" length must be at least 6 characters long'
+        '409':
+          description: Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: Un compte existe déjà avec cet email
+
+  /api/auth/login:
+    post:
+      summary: Login user
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  example: password123
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                      user:
+                        $ref: '#/components/schemas/User'
+                  message:
+                    type: string
+                    example: Connexion réussie
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: Email ou mot de passe incorrect
+
+  /api/auth/logout:
+    post:
+      summary: Logout user (blacklist token)
+      tags:
+        - Authentication
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Déconnexion réussie
+        '401':
+          description: No token provided or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/tontines:
+    post:
+      summary: Create a new tontine
+      tags:
+        - Tontines
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 3
+                  maxLength: 100
+                  example: Monthly Savings Group
+                amount:
+                  type: number
+                  minimum: 0
+                  example: 50000
+                frequency:
+                  type: integer
+                  minimum: 1
+                  description: Payment frequency in days
+                  example: 30
+                startDate:
+                  type: string
+                  format: date
+                  example: "2025-02-01"
+              required:
+                - name
+                - amount
+                - frequency
+                - startDate
+      responses:
+        '201':
+          description: Tontine created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Tontine'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      summary: List user's tontines
+      description: Returns all tontines where user is creator or participant
+      tags:
+        - Tontines
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of tontines
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Tontine'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/tontines/{id}:
+    get:
+      summary: Get tontine details
+      tags:
+        - Tontines
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Tontine details with participants
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    allOf:
+                      - $ref: '#/components/schemas/Tontine'
+                      - type: object
+                        properties:
+                          Participants:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Participant'
+                          participantCount:
+                            type: integer
+        '404':
+          description: Tontine not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/tontines/{id}/join:
+    post:
+      summary: Join a tontine
+      tags:
+        - Tontines
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '201':
+          description: Successfully joined tontine
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Participant'
+        '400':
+          description: Already a participant or tontine completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Tontine not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/tontines/{id}/pay:
+    post:
+      summary: Make a payment
+      description: Make a payment for the current round. Automatically advances round when all participants have paid.
+      tags:
+        - Tontines
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                  example: 50000
+              required:
+                - amount
+      responses:
+        '201':
+          description: Payment recorded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Payment'
+                  message:
+                    type: string
+                    example: Payment for round 1 recorded successfully
+        '400':
+          description: Invalid amount or already paid for this round
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Not a participant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Tontine not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/tontines/{id}/round:
+    get:
+      summary: Get current round status
+      tags:
+        - Tontines
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Round status information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      currentRound:
+                        type: integer
+                        example: 1
+                      totalRounds:
+                        type: integer
+                        example: 5
+                      status:
+                        type: string
+                        example: active
+                      beneficiary:
+                        $ref: '#/components/schemas/User'
+                      participants:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            position:
+                              type: integer
+                            hasReceived:
+                              type: boolean
+                            hasPaidCurrentRound:
+                              type: boolean
+                            User:
+                              $ref: '#/components/schemas/User'
+                      paymentsReceived:
+                        type: integer
+                      totalParticipants:
+                        type: integer
+                      isRoundComplete:
+                        type: boolean
+        '404':
+          description: Tontine not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
