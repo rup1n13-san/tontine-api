@@ -3,7 +3,7 @@ import { Sequelize } from 'sequelize';
 
 dotenv.config();
 
-// Simple database configuration - KISS principle
+
 const sequelize = new Sequelize(
   process.env.DB_NAME || 'tontine_db',
   process.env.DB_USER || 'postgres',
