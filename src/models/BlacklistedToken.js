@@ -1,4 +1,4 @@
-import { DataTypes } from 'sequelize';
+import { DataTypes , Op } from 'sequelize';
 import { sequelize } from '../config/database.js';
 
 const BlacklistedToken = sequelize.define('BlacklistedToken', {
@@ -42,7 +42,7 @@ BlacklistedToken.cleanupExpired = async function() {
     const result = await this.destroy({
       where: {
         expiresAt: {
-          [sequelize.Sequelize.Op.lt]: new Date()
+          [Op.lt]: new Date()
         }
       }
     });
