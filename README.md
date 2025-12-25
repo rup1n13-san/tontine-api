@@ -141,6 +141,113 @@ npm run lint
 
 The API will be available at `http://localhost:3000`
 
+## 🐳 Docker Deployment
+
+### Prerequisites
+
+- Docker 20.10+
+- Docker Compose 2.0+
+
+### Quick Start with Docker Compose
+
+```bash
+# Start all services (API + PostgreSQL)
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop all services
+docker-compose down
+
+# Stop and remove volumes (⚠️ deletes database data)
+docker-compose down -v
+```
+
+The API will be available at `http://localhost:3000`
+
+### Environment Variables for Docker
+
+Create a `.env` file or use environment variables:
+
+```env
+# Application
+NODE_ENV=production
+PORT=3000
+
+# Database
+DB_NAME=tontine_db
+DB_USER=postgres
+DB_PASSWORD=your_secure_password
+
+# JWT
+JWT_SECRET=your_super_secret_jwt_key_change_this
+JWT_EXPIRES_IN=7d
+
+# CORS
+CORS_ORIGIN=*
+```
+
+### Docker Commands
+
+```bash
+# Build the image
+docker-compose build
+
+# Start in detached mode
+docker-compose up -d
+
+# View logs
+docker-compose logs -f api
+docker-compose logs -f postgres
+
+# Restart a service
+docker-compose restart api
+
+# Execute commands in container
+docker-compose exec api npm test
+docker-compose exec postgres psql -U postgres -d tontine_db
+
+# Stop services
+docker-compose stop
+
+# Remove containers and networks
+docker-compose down
+
+# Remove everything including volumes
+docker-compose down -v
+```
+
+### Health Checks
+
+Both services include health checks:
+
+```bash
+# Check API health
+curl http://localhost:3000/health
+
+# Check container health status
+docker-compose ps
+```
+
+### Production Deployment
+
+For production, update your `.env`:
+
+```env
+NODE_ENV=production
+JWT_SECRET=<strong-random-secret>
+DB_PASSWORD=<strong-password>
+CORS_ORIGIN=https://your-domain.com
+```
+
+Then deploy:
+
+```bash
+docker-compose up -d
+```
+
+
 ## 📡 API Endpoints
 
 ### Authentication
@@ -370,7 +477,14 @@ npm run test:watch
 
 ## 🐳 Docker Support
 
-Coming soon in Phase 8!
+✅ **Available!** See [Docker Deployment](#-docker-deployment) section above.
+
+**Features:**
+- Multi-stage Dockerfile for optimized images
+- Docker Compose with PostgreSQL
+- Health checks for both services
+- Volume persistence for database
+- Non-root user for security
 
 ## 🤝 Contributing
 
