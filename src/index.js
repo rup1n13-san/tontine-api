@@ -8,6 +8,8 @@ import authRoutes from './routes/auth.routes.js';
 import indexRoutes from './routes/index.js';
 import tontineRoutes from './routes/tontine.routes.js';
 import { sendError } from './utils/response.js';
+import swaggerUi from 'swagger-ui-express';
+import YAML from 'yamljs';
 
 // Load environment variables
 dotenv.config();
@@ -19,13 +21,6 @@ const PORT = process.env.PORT || 3000;
 // Security middleware
 app.use(helmet());
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.'
-});
-app.use('/api/', limiter);
 
 // CORS configuration
 app.use(cors({
@@ -45,6 +40,10 @@ app.get('/health', (_req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
+// Swagger documentation
+const swaggerDocument = YAML.load('./docs/swagger.yaml');
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // API Routes
 app.use('/', indexRoutes);
