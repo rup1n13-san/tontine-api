@@ -28,8 +28,8 @@
                 "exec": [
                   "if (pm.response.code === 201) {",
                   "    const response = pm.response.json();",
-                  "    pm.environment.set('authToken', response.data.token);",
-                  "    pm.environment.set('userId', response.data.user.id);",
+                  "    pm.collectionVariables.set('authToken', response.data.token);",
+                  "    pm.collectionVariables.set('userId', response.data.user.id);",
                   "    pm.test('Registration successful', () => {",
                   "        pm.expect(response.success).to.be.true;",
                   "        pm.expect(response.data.token).to.exist;",
@@ -70,8 +70,8 @@
                 "exec": [
                   "if (pm.response.code === 200) {",
                   "    const response = pm.response.json();",
-                  "    pm.environment.set('authToken', response.data.token);",
-                  "    pm.environment.set('userId', response.data.user.id);",
+                  "    pm.collectionVariables.set('authToken', response.data.token);",
+                  "    pm.collectionVariables.set('userId', response.data.user.id);",
                   "    pm.test('Login successful', () => {",
                   "        pm.expect(response.success).to.be.true;",
                   "        pm.expect(response.data.token).to.exist;",
@@ -147,7 +147,7 @@
                 "exec": [
                   "if (pm.response.code === 201) {",
                   "    const response = pm.response.json();",
-                  "    pm.environment.set('tontineId', response.data.id);",
+                  "    pm.collectionVariables.set('tontineId', response.data.id);",
                   "    pm.test('Tontine created successfully', () => {",
                   "        pm.expect(response.success).to.be.true;",
                   "        pm.expect(response.data.id).to.exist;",
@@ -191,6 +191,11 @@
                   "    const response = pm.response.json();",
                   "    pm.expect(response.success).to.be.true;",
                   "    pm.expect(response.data).to.be.an('array');",
+                  "",
+                  "    // Auto-save first tontine ID if available",
+                  "    if (response.data.length > 0) {",
+                  "        pm.collectionVariables.set('tontineId', response.data[0].id);",
+                  "    }",
                   "});"
                 ],
                 "type": "text/javascript"

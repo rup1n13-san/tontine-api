@@ -263,6 +263,7 @@ Import the Postman collection for easy testing:
 - **Features**:
   - All endpoints with examples
   - Automated tests
+  - **Auto-Auth**: Tokens are automatically saved and used for subsequent requests! 🪄 (Using Collection Variables - no setup required)
   - Environment variables
   - Auto-save auth token
 
