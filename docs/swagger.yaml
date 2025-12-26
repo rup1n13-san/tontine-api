@@ -14,8 +14,7 @@ info:
 servers:
   - url: http://localhost:3000
     description: Development server
-  - url: https://api.tontine.com
-    description: Production server
+
 
 tags:
   - name: Authentication

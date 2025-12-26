@@ -2,12 +2,8 @@
 
 > REST API for managing tontines (rotating savings and credit associations) with JWT authentication and automatic round tracking.
 
-[![Tests](https://img.shields.io/badge/tests-23%2F23-success)](https://github.com/rup1n13-san/tontine-api)
-[![Coverage](https://img.shields.io/badge/coverage-82.71%25-success)](https://github.com/rup1n13-san/tontine-api)
-[![Node](https://img.shields.io/badge/node-v18+-green)](https://nodejs.org)
-[![PostgreSQL](https://img.shields.io/badge/postgresql-v14+-blue)](https://www.postgresql.org)
 
-## 📖 What is a Tontine?
+## What is a Tontine?
 
 A tontine is a collaborative savings system where:
 - Members contribute a fixed amount periodically
@@ -15,16 +11,16 @@ A tontine is a collaborative savings system where:
 - Rotation continues until all members have received once
 - Requires trust and commitment from all participants
 
-## ✨ Features
+## Features
 
-- 🔐 **JWT Authentication** with token blacklisting
-- 💰 **Tontine Management** with automatic round progression
-- 👥 **Participant Tracking** with position assignment
-- 💳 **Payment System** with validation and round advancement
-- 📊 **Round Status** monitoring
-- ✅ **Input Validation** with Joi schemas
-- 🧪 **Comprehensive Testing** (23 tests, 82.71% coverage)
-- 📚 **API Documentation** (Swagger + Postman)
+- **JWT Authentication** with token blacklisting
+- **Tontine Management** with automatic round progression
+- **Participant Tracking** with position assignment
+- **Payment System** with validation and round advancement
+- **Round Status** monitoring
+- **Input Validation** with Joi schemas
+- **Comprehensive Testing** (23 tests, 82.71% coverage)
+- **API Documentation** (Swagger + Postman)
 
 ## 🚀 Tech Stack
 
@@ -36,7 +32,7 @@ A tontine is a collaborative savings system where:
 - **Testing**: Jest + Supertest
 - **Documentation**: Swagger/OpenAPI 3.0
 
-## 📋 Prerequisites
+## Prerequisites
 
 - Node.js v18 or higher
 - PostgreSQL v14 or higher
@@ -57,30 +53,7 @@ cd tontine-api
 npm install
 ```
 
-### 3. Setup PostgreSQL
-
-Follow the guide: [docs/POSTGRESQL_INSTALL.md](docs/POSTGRESQL_INSTALL.md)
-
-Or quick setup:
-
-```bash
-# Install PostgreSQL (Ubuntu/Debian)
-sudo apt update
-sudo apt install postgresql postgresql-contrib
-
-# Start PostgreSQL service
-sudo systemctl start postgresql
-sudo systemctl enable postgresql
-
-# Create database
-sudo -u postgres psql
-CREATE DATABASE tontine_db;
-CREATE USER tontine_user WITH PASSWORD 'your_password';
-GRANT ALL PRIVILEGES ON DATABASE tontine_db TO tontine_user;
-\\q
-```
-
-### 4. Configure environment variables
+### 3. Configure environment variables
 
 ```bash
 cp .env.example .env
@@ -107,7 +80,7 @@ JWT_EXPIRES_IN=7d
 CORS_ORIGIN=http://localhost:3000
 ```
 
-## 🏃 Running the Application
+### 4. Running the Application
 
 ### Development mode (with auto-reload)
 
@@ -160,7 +133,7 @@ docker-compose logs -f
 # Stop all services
 docker-compose down
 
-# Stop and remove volumes (⚠️ deletes database data)
+# Stop and remove volumes
 docker-compose down -v
 ```
 
@@ -248,7 +221,7 @@ docker-compose up -d
 ```
 
 
-## 📡 API Endpoints
+##  API Endpoints
 
 ### Authentication
 
@@ -281,7 +254,7 @@ docker-compose up -d
 
 Full API documentation is available in Swagger format:
 - **File**: [`docs/swagger.yaml`](docs/swagger.yaml)
-- **View**: Use [Swagger Editor](https://editor.swagger.io/) or [Swagger UI](https://swagger.io/tools/swagger-ui/)
+- **View**: Use [Swagger Editor](https://editor.swagger.io/) or check the [Endpoints](http://localhost:3000/api-docs)
 
 ### Postman Collection
 
@@ -429,8 +402,7 @@ tontine-api/
 │   └── tontine.test.js          # Tontine tests (13 tests)
 ├── docs/
 │   ├── swagger.yaml             # OpenAPI documentation
-│   ├── tontine-api.postman_collection.json
-│   └── POSTGRESQL_INSTALL.md
+│   └── tontine-api.postman_collection.json
 ├── .env.example
 ├── .eslintrc.json
 ├── .gitignore
@@ -453,12 +425,6 @@ npm run test:coverage
 # Run tests in watch mode
 npm run test:watch
 ```
-
-**Test Coverage:**
-- **Statements**: 82.71%
-- **Branches**: 70.58%
-- **Functions**: 88.46%
-- **Lines**: 82.84%
 
 **Test Suites:**
 - Authentication Tests (10 tests)
@@ -494,16 +460,10 @@ npm run test:watch
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📝 License
+## License
 
 ISC
 
-## 👨‍💻 Author
+## Author
 
 **rup1n13-san**
-
-## 🙏 Acknowledgments
-
-- Built with clean code principles (KISS, DRY, SRP)
-- Follows conventional commits
-- Comprehensive testing and documentation
